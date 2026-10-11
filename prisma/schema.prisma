@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Tier {
+  DEVELOPER
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum ThreatStatus {
+  ACTIVE
+  RESOLVED
+  FALSE_POSITIVE
+}
+
+enum WebhookEvent {
+  CRITICAL_ALERT
+  WARNING_ALERT
+  INFO_ALERT
+  DAILY_SUMMARY
+  QUOTA_WARNING
+}
+
+model Client {
+  id                String        @id @default(cuid())
+  name              String
+  email             String        @unique
+  apiKey            String        @unique @default(cuid())
+  apiKeyHash        String
+  tier              Tier          @default(DEVELOPER)
+  status            String        @default("active")
+  monthlyQuota      Int           @default(1000)
+  usedQuota         Int           @default(0)
+  quotaResetAt      DateTime      @default(now())
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
+  allowedTokens     AllowedToken[]
+  webhooks          WebhookConfig[]
+  usageLogs         UsageLog[]
+  threatReports     ThreatReport[]
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  lastActiveAt      DateTime?
+
+  @@index([email])
+  @@index([apiKey])
+  @@index([stripeCustomerId])
+}
+
+model AllowedToken {
+  id            String   @id @default(cuid())
+  clientId      String
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  chainId       Int
+  symbol        String
+  name          String
+  addresses     String[]
+  decimals      Int
+  minHolders    Int      @default(1000)
+  minTransfers  Int      @default(100)
+  minAgeDays    Int      @default(30)
+  customConfig  Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([clientId, chainId, symbol])
+  @@index([clientId])
+}
+
+model WebhookConfig {
+  id        String       @id @default(cuid())
+  clientId  String
+  client    Client       @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  url       String
+  events    WebhookEvent[]
+  secret    String
+  enabled   Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([clientId])
+}
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  endpoint  String
+  method    String
+  statusCode Int
+  latencyMs Int
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([clientId, createdAt])
+  @@index([createdAt])
+}
+
+model ThreatRecord {
+  id              String         @id @default(cuid())
+  address         String
+  chainId         Int
+  symbol          String?
+  riskScore       Int
+  status          ThreatStatus   @default(ACTIVE)
+  layers          Json
+  firstSeenAt     DateTime       @default(now())
+  lastSeenAt      DateTime       @default(now())
+  reporterCount   Int            @default(1)
+  reporters       String[]
+  metadata        Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  reports         ThreatReport[]
+
+  @@unique([address, chainId])
+  @@index([address])
+  @@index([chainId])
+  @@index([status])
+  @@index([riskScore])
+}
+
+model ThreatReport {
+  id            String      @id @default(cuid())
+  clientId      String
+  client        Client      @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  threatRecordId String
+  threatRecord  ThreatRecord @relation(fields: [threatRecordId], references: [id], onDelete: Cascade)
+  detectionId   String
+  riskScore     Int
+  layers        Json
+  createdAt     DateTime    @default(now())
+
+  @@index([clientId])
+  @@index([threatRecordId])
+}
+
+model BillingEvent {
+  id            String   @id @default(cuid())
+  clientId      String
+  stripeEventId String   @unique
+  eventType     String
+  amount        Int?
+  currency      String?
+  status        String
+  payload       Json
+  processedAt   DateTime?
+  createdAt     DateTime @default(now())
+
+  @@index([clientId])
+  @@index([stripeEventId])
+}
+
+model ApiKeyRotation {
+  id          String   @id @default(cuid())
+  clientId    String
+  oldKeyHash  String
+  newKeyHash  String
+  rotatedAt   DateTime @default(now())
+  rotatedBy   String?
+
+  @@index([clientId])
+}

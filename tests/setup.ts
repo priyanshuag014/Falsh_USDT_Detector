@@ -1,0 +1,20 @@
+// Test setup - mock environment variables
+process.env.ETH_RPC_URL = 'http://localhost:8545';
+process.env.ETH_WS_URL = 'ws://localhost:8545';
+process.env.ETHERSCAN_API_KEY = 'test-key';
+process.env.ETHERSCAN_API_URL = 'https://api.etherscan.io/v2/api';
+process.env.CHAIN_ID = '1';
+process.env.MIN_HOLDER_COUNT = '10000';
+process.env.MIN_DAILY_TRANSFERS = '100';
+process.env.MIN_CONTRACT_AGE_DAYS = '30';
+process.env.MAX_SUPPLY_DEVIATION_PERCENT = '50';
+process.env.RISK_SCORE_THRESHOLD = '70';
+process.env.API_PORT = '3000';
+process.env.API_HOST = '0.0.0.0';
+process.env.CORS_ORIGINS = '*';
+process.env.RATE_LIMIT_WINDOW_MS = '60000';
+process.env.RATE_LIMIT_MAX_REQUESTS = '100';
+process.env.ALERT_CONSOLE = 'true';
+process.env.ALERT_FILE = 'false';
+process.env.LOG_FILE = './logs/detector.log';
+process.env.LOG_LEVEL = 'info';

@@ -1,0 +1,16 @@
+# Flash USDT Test Addresses
+# Lines starting with # are comments
+# One address per line
+
+# Legitimate USDT (Ethereum Mainnet)
+0xdAC17F958D2ee523a2206206994597C13D831ec7
+
+# Known fake USDT addresses (examples - replace with real ones for testing)
+# 0x1234567890123456789012345678901234567890
+# 0xabcdefabcdefabcdefabcdefabcdefabcdefabcd
+
+# Other legitimate tokens for comparison
+# USDC
+0xA0b86a33E6441b8C4C8C8C8C8C8C8C8C8C8C8C8C
+# WETH
+0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
